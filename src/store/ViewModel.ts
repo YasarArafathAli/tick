@@ -5,14 +5,30 @@ import {
 } from "mobx";
 
 interface task {
-    title: string,
-    status: string,
-    edit: boolean
+  id: number,
+  title: string,
+  status: string,
+  date: any,
+  edit: boolean
 }
 
+let dateString = new Date().toISOString().slice(0,10);
 export default class ViewModel {
   @observable todoList: task[] = [];
   @observable title: string = '';
+  @observable todoDate: string = dateString;
+  @observable displayList: task[] = [];
+  
+  
+  @computed
+  incompleteTasks() {
+    return this.todoList.filter((task:task) => task.status === "Incomplete")
+  }
+
+  @computed
+  inProgressTasks() {
+    return this.todoList.filter((task:task) => task.date ===this.todoDate)
+  }
 
   @action.bound
   async fetchItems() {
@@ -27,52 +43,9 @@ export default class ViewModel {
   }
 
   @action
-  capitalize(str: string) {
-    return str.charAt(0).toUpperCase() + str.slice(1);
-  }
-
-  @action
-  clearTodo() {
-    this.todoList = [];
-    this.saveLocal();
-  }
-
-
-
-  @action
-  deleteTodo(index: number) {
-    this.todoList.splice(index, 1);
-    this.saveLocal();
-  }
-
-
-  @action
-  updateTodo(index: number, todoName: string) {
-    this.todoList[index].title = todoName;
-    this.todoList[index].edit = !this.todoList[index].edit;
-    this.saveLocal();
-  }
-
-
-  @action
-  completeTodo(index: number) {
-    console.log(this.todoList[index])
-    if (this.todoList[index].status == 'Incomplete') {
-      this.todoList[index].status = "In Progress";
-    } else if (this.todoList[index].status == 'In Progress') {
-      this.todoList[index].status = "Completed";
-
-    } else {
-      this.todoList[index].status = "Incomplete";
-    }
-
-    this.saveLocal();
-  }
-
-  @action
-  editTodo(index: number) {
-    this.todoList[index].edit = !this.todoList[index].edit;
-    this.saveLocal();
+  filterTodo() {
+    this.displayList = this.todoList.filter((task:task) =>  task.date === this.todoDate)
+    console.log(this.displayList)
   }
 
   @action
@@ -82,21 +55,78 @@ export default class ViewModel {
     if (this.title === "") {
       return 0;
     }
+
     let todoObj = {
+      id: parseInt(Math.ceil(Math.random() * Date.now()).toPrecision(8).toString().replace(".", "")),
       title: this.title,
       status: 'Incomplete',
+      date: dateString,
       edit: false
     }
     this.todoList.push(todoObj);
     this.title = '';
+    this.filterTodo()
     this.saveLocal()
+
     console.log(todoObj)
+    console.log(this.displayList)
+  }
+
+  @action
+  editTodo(index: number) {
+    this.displayList[index].edit = !this.displayList[index].edit;
+  
+    this.saveLocal();
+  }
+
+  @action
+  deleteTodo(id: number) {
+    this.todoList = this.todoList.filter(task => task.id!== id);
+    this.displayList = this.displayList.filter(task => task.id!== id);
+    console.log(this.todoList, this.displayList)
+    this.saveLocal()
+    }
+
+  @action
+  updateTodo(index:number ,id: number, todoName: string) {
+    let taskObj: any = this.todoList.find(task => task.id === id);
+    taskObj.title = todoName;
+    this.displayList[index].edit = !this.displayList[index].edit;
+    this.saveLocal();
+  }
+
+  
+  @action
+  completeTodo(id: number) {
+    let taskObj: any = this.todoList.find(task => task.id === id);
+
+    if (taskObj.status == 'Incomplete') {
+      taskObj.status = "In Progress";
+    } else if (taskObj.status == 'In Progress') {
+      taskObj.status = "Completed";
+    } else {
+      taskObj.status = "Incomplete";
+    }
+    this.saveLocal();
+  }
+
+
+  @action
+  clearTodo() {
+    this.todoList = [];
+    this.saveLocal();
   }
 
   @action
   saveLocal() {
     const listString = JSON.stringify(this.todoList);
     localStorage.setItem('todoList', listString);
+  }
+
+
+  @action
+  capitalize(str: string) {
+    return str.charAt(0).toUpperCase() + str.slice(1);
   }
 }
 
