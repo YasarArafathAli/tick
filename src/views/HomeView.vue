@@ -1,8 +1,7 @@
-<template>
-  <div class="home">
-    <HelloWorld msg="Todo TS App"/>
-    <AddInput />
-  </div>
+<template lang="pug">
+  .home
+    HelloWorld(msg='Todo TS App')
+    AddInput
 </template>
 
 <script lang="ts">
