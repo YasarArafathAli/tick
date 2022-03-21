@@ -2,13 +2,37 @@
   <div id="app">
     <div class="container">
     <nav>
-      <router-link to="/">Home</router-link> |
+      <HelloWorld msg='TaskIt'/>
+      <div class="navlink">
+        <ul>
+          <li>
+      <router-link to="/">Home</router-link> 
+          </li>
+          <li>|</li>
+          <li>
       <router-link to="/about">About</router-link>
+          </li>
+        </ul>
+
+      </div>
     </nav>
     <router-view/>
     </div>
   </div>
 </template>
+
+<script>
+  import HelloWorld from '@/components/HelloWorld.vue'; 
+
+export default {
+  name: 'app',
+  components: {
+  HelloWorld
+
+  }
+
+}
+</script>
 
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&display=swap');
@@ -23,8 +47,17 @@
 
 nav {
   padding: 30px;
+  display: flex;
+  justify-content: space-around;
 }
 
+ul{
+  display: flex;
+  list-style-type: none;
+}
+li{
+  padding: 10px
+}
 nav a {
   font-weight: bold;
   color: #2c3e50;

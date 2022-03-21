@@ -1,6 +1,5 @@
 <template lang="pug">
   .home
-    HelloWorld(msg='Todo TS App')
     AddInput
 </template>
 

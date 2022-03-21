@@ -8,16 +8,23 @@ interface task {
   id: number,
   title: string,
   status: string,
-  date: any,
+  date: string,
+  endTime: string
   edit: boolean
 }
 
 let dateString = new Date().toISOString().slice(0,10);
+let timeString = new Date().toString().slice(16,21);
 export default class ViewModel {
   @observable todoList: task[] = [];
-  @observable title: string = '';
-  @observable todoDate: string = dateString;
   @observable displayList: task[] = [];
+  @observable todoDate: string = dateString;
+  @observable title: string = '';
+  @observable inputDate: string = dateString;
+  @observable inputTime: string = timeString;
+
+  @observable overActive: boolean = false;
+
   
   
   @computed
@@ -27,7 +34,7 @@ export default class ViewModel {
 
   @computed
   inProgressTasks() {
-    return this.todoList.filter((task:task) => task.date ===this.todoDate)
+    return this.todoList.filter((task:task) => task.status === "In Progress")
   }
 
   @action.bound
@@ -44,13 +51,37 @@ export default class ViewModel {
 
   @action
   filterTodo() {
-    this.displayList = this.todoList.filter((task:task) =>  task.date === this.todoDate)
+    this.displayList = this.todoList.filter((task:task) =>  task.date === this.todoDate);
+    this.sortTodo();
+  }
+
+  @action
+  dragStart(evt:any, index:any ){
+    console.log('Drag Element Index:')
+    evt.dataTransfer.dropEffect = 'move'
+    evt.dataTransfer.effectAllowed = 'move'
+    evt.dataTransfer.setData('itemID', index)
+    console.log(index)
+  }
+
+ 
+  @action
+  dragDrop(evt: any,index: number){
+    console.log('Drop Element Index:');
+    const oldIndex = evt.dataTransfer.getData('itemID')
+    this.displayList[oldIndex] = this.displayList.splice(index,1,this.displayList[oldIndex])[0]
     console.log(this.displayList)
   }
 
   @action
-  addToTodo() {
+  sortTodo(){
+    this.displayList = this.displayList.sort((a,b) => a.id-b.id)
+  }
 
+  @action
+  addToTodo() {
+    
+    
     console.log(this.title)
     if (this.title === "") {
       return 0;
@@ -60,7 +91,8 @@ export default class ViewModel {
       id: parseInt(Math.ceil(Math.random() * Date.now()).toPrecision(8).toString().replace(".", "")),
       title: this.title,
       status: 'Incomplete',
-      date: dateString,
+      date: this.inputDate,
+      endTime: this.inputTime,
       edit: false
     }
     this.todoList.push(todoObj);
@@ -84,6 +116,7 @@ export default class ViewModel {
     this.todoList = this.todoList.filter(task => task.id!== id);
     this.displayList = this.displayList.filter(task => task.id!== id);
     console.log(this.todoList, this.displayList)
+    this.filterTodo();
     this.saveLocal()
     }
 
@@ -113,7 +146,8 @@ export default class ViewModel {
 
   @action
   clearTodo() {
-    this.todoList = [];
+    this.todoList = this.todoList.filter(x => !this.displayList.includes(x))
+    this.displayList = [];
     this.saveLocal();
   }
 

@@ -1,6 +1,7 @@
 <template lang="pug">
     div
-        .incomplete(v-for="task in state.incompleteTasks" :key="task.title")
+        p incomplete tasks
+        .incomplete(v-for="task in state.incompleteTask" :key="task.title")
         |   {{ task.title }}) 
         .inProgress(v-for="task in state.inProgressTasks" :key="task.title")
         |   {{ task.title }}) 
